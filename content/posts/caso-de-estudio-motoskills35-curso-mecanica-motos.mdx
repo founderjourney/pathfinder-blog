@@ -1,0 +1,186 @@
+---
+title: "Caso de Estudio: MotoSkills35 - Plataforma de E-learning para Mecanica de Motos"
+excerpt: "Desarrollando una plataforma de curso digital de mecanica de motocicletas. Desafios de integracion de pagos en COP, tracking de analytics, y disenar para una audiencia especifica."
+date: "2024-12-09"
+author: "Mauro | Pathfinders Labs"
+category: "Case Study"
+featuredImage: ""
+---
+
+## El Contexto
+
+El cliente es un mecanico con mas de 20 anos de experiencia que queria digitalizar su conocimiento. Su publico objetivo: personas que acaban de comprar su primera moto y quieren entender lo basico de mantenimiento sin depender de un taller para cada cosa.
+
+**El producto:** Un curso de 60 dias que cubre desde cambio de aceite hasta diagnostico de problemas comunes.
+
+**Mi rol:** Crear la landing page de venta y la infraestructura de pagos.
+
+## Entendiendo el Mercado
+
+Antes de disenar, investigue el mercado de cursos de mecanica en Colombia:
+
+**Hallazgos:**
+- Audiencia mayoritariamente masculina, 25-45 anos
+- Nivel socioeconomico medio - precio sensible
+- Acceso principalmente desde celular
+- Desconfianza hacia compras online (especialmente cursos)
+- Preferencia por metodos de pago locales
+
+Estos insights guiaron cada decision del proyecto.
+
+## Desafios Tecnicos
+
+### 1. Pagos en Pesos Colombianos (COP)
+
+**El problema:** Integrar pagos en Colombia tiene complejidades que no existen en USD:
+
+- El COP no usa decimales (1000 pesos, no 10.00)
+- Muchos colombianos prefieren pagar en efectivo via Efecty/Baloto
+- Las tarjetas locales a veces son rechazadas por procesadores internacionales
+- PSE (transferencia bancaria local) es muy popular
+
+**La solucion:**
+
+Implemente una integracion hibrida:
+- **Stripe** para tarjetas internacionales
+- **Pasarela local** como backup para tarjetas colombianas
+- **Link de pago** con multiples opciones
+
+El formateo de precios fue sorprendentemente complicado:
+
+```javascript
+// COP no tiene decimales y usa puntos como separador de miles
+function formatCOP(amount) {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount)
+}
+
+// $297.000 (correcto para Colombia)
+// no $297,000.00 (incorrecto)
+```
+
+### 2. Analytics para Optimizacion de Marketing
+
+**El problema:** El cliente invierte en ads de Facebook e Instagram. Necesitaba saber exactamente que campanas generan ventas, no solo clicks.
+
+**La solucion:**
+
+Implemente tracking completo:
+
+- **Google Analytics 4** - Comportamiento en sitio
+- **Facebook Pixel** - Conversion tracking para ads
+- **Eventos personalizados** - Cada paso del funnel trackeado
+
+```javascript
+// Tracking de eventos criticos
+const trackingEvents = {
+  'page_view': { page: 'landing' },
+  'scroll_50': { section: 'beneficios' },
+  'video_play': { video: 'intro' },
+  'cta_click': { button: 'comprar', position: 'hero' },
+  'checkout_start': { product: 'curso_60_dias' },
+  'purchase_complete': { value: 297000, currency: 'COP' }
+}
+```
+
+El cliente ahora puede ver exactamente: "La campana X genero 50 clics, 10 iniciaron checkout, 3 compraron."
+
+### 3. Diseno que Genera Confianza
+
+**El problema:** En LATAM hay mucho escepticismo hacia cursos online. Demasiados "gurus" vendiendo humo.
+
+**La solucion:** Elementos de confianza en cada seccion.
+
+1. **Rostro visible** - Foto y video del instructor. No es anonimo
+2. **Contenido del curso** - Lista detallada de modulos. Sabes que obtienes
+3. **Garantia explicita** - 7 dias de garantia, proceso claro de reembolso
+4. **Testimonios verificables** - Nombres reales, fotos reales
+5. **Precio transparente** - Sin costos ocultos, sin "pero espera, hay mas"
+
+La landing sigue la estructura clasica de copy de respuesta directa, pero sin los trucos manipuladores.
+
+## Optimizaciones de Conversion
+
+### Above the Fold
+
+Los primeros 5 segundos determinan si el visitante se queda. El hero incluye:
+
+- **Headline claro:** "Aprende mecanica de motos en 60 dias"
+- **Subheadline:** Beneficio especifico, no vago
+- **Video intro:** 90 segundos mostrando al instructor
+- **CTA primario:** "Empezar ahora" con precio visible
+
+### Elementos de Urgencia (Eticos)
+
+El cliente queria "countdown timers" y "solo quedan 3 lugares". Le explique por que eso destruye confianza a largo plazo.
+
+En cambio, implementamos urgencia real:
+- Precio de lanzamiento con fecha limite real
+- Bonus adicional para los primeros 50 estudiantes
+- Actualizaciones gratuitas para compradores antes de X fecha
+
+Nada falso, todo verificable.
+
+### Mobile-First Extremo
+
+El 82% del trafico viene de mobile (principalmente Instagram Stories -> Landing).
+
+Optimizaciones:
+- CTA sticky en bottom del viewport
+- Secciones cortas, scroll vertical natural
+- Formularios minimos (nombre, email, telefono)
+- Touch targets grandes (minimo 44px)
+
+## Stack Tecnologico
+
+| Categoria | Tecnologia |
+|-----------|------------|
+| Frontend | React |
+| Styling | Tailwind CSS |
+| Analytics | GA4, Facebook Pixel |
+| Pagos | Stripe + pasarela local |
+| Deploy | Vercel |
+| Video | YouTube embeds (lazy loaded) |
+
+## Resultados
+
+Metricas post-lanzamiento (primer mes):
+
+- **Trafico:** 2,400 visitantes unicos
+- **Tasa de conversion:** 2.1% (por encima del promedio de 1.5% para cursos)
+- **Ticket promedio:** COP 297,000
+- **ROAS:** 3.2x (por cada peso en ads, 3.2 pesos en ventas)
+
+## Lecciones Aprendidas
+
+### 1. El contexto local importa
+
+Lo que funciona en USA no funciona igual en Colombia. Metodos de pago, copy, nivel de desconfianza - todo es diferente.
+
+**Investigar el mercado local antes de disenar.**
+
+### 2. Analytics desde el dia 0
+
+Muchos lanzan primero y agregan tracking despues. Perdiendo datos valiosos de los primeros (y mas importantes) visitantes.
+
+**Tracking completo antes de enviar el primer visitante.**
+
+### 3. Simple > Sofisticado
+
+La primera version tenia animaciones elaboradas, multiples secciones, elementos interactivos. Lo simplifique drasticamente.
+
+**La landing que convierte mejor es la que menos distrae.**
+
+## Reflexion
+
+MotoSkills35 es un ejemplo de como el trabajo "simple" de landing page puede tener impacto real. El cliente ahora tiene un negocio digital que funciona 24/7, generando ingresos mientras el enseña presencialmente.
+
+Ese es el poder de la digitalizacion bien hecha.
+
+---
+
+*¿Tienes un producto o servicio que necesita una landing page optimizada para conversion? [Contactame](/contacto).*

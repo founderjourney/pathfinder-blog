@@ -1,0 +1,127 @@
+---
+title: "Caso de Estudio: Digitaliza - Construyendo un SaaS de Menu Digital desde Cero"
+excerpt: "Como desarrolle una plataforma Link-in-Bio con menu digital, sistema de pedidos y reservas. Los desafios tecnicos de arquitectura multi-tenant, pagos con Stripe y templates animados."
+date: "2024-12-15"
+author: "Mauro | Pathfinders Labs"
+category: "Case Study"
+featuredImage: ""
+---
+
+## El Problema que Queria Resolver
+
+Durante mis viajes por Latinoamerica, note un patron repetitivo: pequenos negocios locales - cafeterias, restaurantes familiares, barber shops - pagando fortunas por soluciones digitales basicas o, peor aun, sin presencia digital alguna.
+
+Un menu digital no deberia costar $200/mes. Una pagina link-in-bio profesional no deberia requerir un desarrollador.
+
+**Asi nacio Digitaliza.**
+
+## El Concepto
+
+Digitaliza es una plataforma SaaS que combina:
+
+- **Link-in-Bio personalizable** - La "tarjeta de presentacion digital" del negocio
+- **Menu digital con carrito** - Pedidos sin necesidad de app
+- **Sistema de citas y reservas** - Integrado nativamente
+- **Aurora Templates** - 4 estilos animados para diferenciarse
+- **QR codes** - Acceso instantaneo desde el local
+
+El objetivo: que cualquier negocio local pueda tener presencia digital profesional en menos de 15 minutos.
+
+## Desafios Tecnicos
+
+### 1. Arquitectura Multi-Tenant
+
+El primer gran desafio fue disenar una arquitectura que soportara miles de negocios sin que uno afectara al otro.
+
+**El problema:** Cada negocio necesita su subdominio o ruta unica, su propia configuracion, sus propios datos - pero todo corriendo en la misma infraestructura.
+
+**La solucion:** Implemente un patron de multi-tenancy a nivel de base de datos usando PostgreSQL con Neon. Cada request identifica el tenant via middleware de Next.js, y Prisma maneja el aislamiento de datos automaticamente.
+
+```
+// Simplificado - Middleware de identificacion de tenant
+const tenant = await getTenantFromSubdomain(request.headers.host)
+if (!tenant) return NextResponse.redirect('/onboarding')
+```
+
+El truco esta en cachear agresivamente la resolucion de tenants - una consulta a la DB por cada request seria insostenible.
+
+### 2. Aurora Templates y Performance
+
+Queria que los templates se sintieran premium - animaciones fluidas, transiciones elegantes. Pero las animaciones pueden destruir la performance, especialmente en dispositivos moviles de gama baja (muy comunes en mi mercado objetivo).
+
+**El problema:** Framer Motion es poderoso pero pesado. Animaciones complejas en 4 templates diferentes podian hacer que la pagina tardara segundos en ser interactiva.
+
+**La solucion:**
+- **Lazy loading** de animaciones - solo cargan cuando el template esta visible
+- **Reduced motion** detection - respeto las preferencias del sistema
+- **GPU acceleration** selectiva - `will-change` solo donde realmente ayuda
+- **Bundle splitting** - cada template es un chunk separado
+
+El resultado: Time to Interactive bajo 3 segundos incluso en conexiones 3G.
+
+### 3. Stripe para Latinoamerica
+
+Integrar pagos en LATAM es... complicado. Stripe no soporta todos los paises, las monedas locales tienen sus particularidades, y los usuarios esperan metodos de pago locales.
+
+**El problema:** Necesitaba soportar pesos colombianos, pesos mexicanos, y eventualmente otras monedas - cada una con sus reglas de formateo y conversion.
+
+**La solucion:** Cree una capa de abstraccion sobre Stripe que maneja:
+- Deteccion automatica de moneda por ubicacion
+- Formateo correcto (COP no usa decimales, MXN si)
+- Fallbacks para paises sin soporte directo
+- Webhooks robustos con retry logic
+
+El codigo de manejo de webhooks fue particularmente critico - un webhook perdido significa un pago sin registrar.
+
+## Stack Tecnologico
+
+| Categoria | Tecnologia | Por que |
+|-----------|------------|---------|
+| Framework | Next.js 14 | App Router, RSC, excelente DX |
+| Frontend | React 18 + TypeScript | Type safety es no-negociable en SaaS |
+| Styling | Tailwind CSS | Rapidez de desarrollo, bundle pequeno |
+| Animaciones | Framer Motion | API declarativa, performance optimizable |
+| Database | PostgreSQL (Neon) | Serverless, branching para dev |
+| ORM | Prisma | Migraciones, type safety |
+| Pagos | Stripe | El estandar, buena API |
+| Storage | Vercel Blob | Simple, integrado |
+| Validacion | Zod | Runtime validation, inferencia de tipos |
+
+## Lecciones Aprendidas
+
+### 1. No subestimes el onboarding
+
+Mi primera version tenia un onboarding de 8 pasos. Nadie lo completaba.
+
+Lo reduje a 3 pasos esenciales: nombre del negocio, logo (opcional), y tipo de negocio. Todo lo demas se puede configurar despues. **Conversion de onboarding subio 340%.**
+
+### 2. Mobile-first no es opcional
+
+El 78% de mis usuarios acceden desde movil. Cada feature que diseno, la diseno primero para una pantalla de 375px. Desktop es la adaptacion, no al reves.
+
+### 3. El feedback loop es oro
+
+Implemente un sistema simple de feedback in-app. Las sugerencias de usuarios reales han guiado el 60% del roadmap. Construir en aislamiento es construir features que nadie quiere.
+
+## Estado Actual y Proximos Pasos
+
+Digitaliza esta actualmente en fase de validacion con usuarios beta en Colombia y Mexico. Los primeros resultados son prometedores:
+
+- **47 negocios** en la plataforma
+- **Tiempo promedio de setup:** 12 minutos
+- **NPS:** 72
+
+Proximos features en el roadmap:
+- Integracion con WhatsApp Business API
+- Analytics de visitas y conversiones
+- Marketplace de templates de la comunidad
+
+## Reflexion
+
+Digitaliza representa exactamente lo que creo: **la tecnologia debe empoderar, no excluir**.
+
+Un restaurante familiar en Medellin merece las mismas herramientas digitales que una startup en Silicon Valley. La diferencia no deberia ser el presupuesto, sino la ambicion.
+
+---
+
+*Este proyecto esta en desarrollo activo. Si quieres ser beta tester o tienes feedback, [contactame](/contacto).*

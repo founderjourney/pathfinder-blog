@@ -1,0 +1,185 @@
+---
+title: "Caso de Estudio: GrantInsight - Dashboard de Oportunidades de Financiamiento"
+excerpt: "Desarrollando una plataforma para descubrir y organizar grants y oportunidades de financiacion. Desafios de agregacion de datos, UX para usuarios no tecnicos, y busqueda eficiente."
+date: "2024-12-12"
+author: "Mauro | Pathfinders Labs"
+category: "Case Study"
+featuredImage: ""
+---
+
+## El Brief del Cliente
+
+El cliente vino con un problema claro: "Hay cientos de oportunidades de financiamiento - grants, subsidios, programas de aceleracion - pero estan dispersas en docenas de sitios. Necesito un lugar central para encontrarlas."
+
+Fundadores y organizaciones sin fines de lucro pasan horas buscando financiamiento en multiples fuentes. Es tiempo que podrian usar construyendo su proyecto.
+
+**GrantInsight nacio para centralizar esa busqueda.**
+
+## Alcance del Proyecto
+
+El dashboard incluye:
+
+- **Catalogo de oportunidades** - Base de datos centralizada de grants
+- **Sistema de busqueda avanzada** - Filtros por categoria, monto, region, deadline
+- **Organizacion personal** - Guardar favoritos, notas, estados de aplicacion
+- **Vista de calendario** - Deadlines visualizados en timeline
+- **Agregacion multi-fuente** - Datos de multiples origenes unificados
+
+## Desafios Tecnicos
+
+### 1. La Arquitectura de Datos
+
+**El problema:** Los datos de grants vienen de fuentes diversas con estructuras diferentes. Algunos tienen montos fijos, otros rangos. Algunos tienen deadlines especificos, otros son rolling. Algunos son para individuos, otros para organizaciones.
+
+**La solucion:** Disenar un schema flexible pero queryable:
+
+```typescript
+interface GrantOpportunity {
+  id: string
+  title: string
+  description: string
+
+  // Montos flexibles
+  funding: {
+    type: 'fixed' | 'range' | 'variable'
+    min?: number
+    max?: number
+    currency: string
+  }
+
+  // Deadlines diversos
+  deadline: {
+    type: 'specific' | 'rolling' | 'ongoing'
+    date?: Date
+    frequency?: string
+  }
+
+  // Elegibilidad
+  eligibility: {
+    entityTypes: ('individual' | 'nonprofit' | 'startup' | 'company')[]
+    regions: string[]
+    sectors: string[]
+  }
+
+  // Metadata
+  source: string
+  sourceUrl: string
+  lastUpdated: Date
+}
+```
+
+La clave fue anticipar la variabilidad sin sobre-ingenieria. Cada campo que "podria ser util algun dia" es complejidad que mantener.
+
+### 2. Busqueda que Funciona para No-Tecnicos
+
+**El problema:** Los usuarios no son desarrolladores. No quieren escribir queries. Quieren encontrar grants relevantes con el minimo esfuerzo.
+
+**Desafios especificos:**
+- Busqueda por texto libre que entienda sinonimos
+- Filtros combinables sin confundir
+- Resultados que tengan sentido para el usuario
+
+**La solucion:**
+
+1. **Busqueda con fuzzy matching** - "tecnologia" encuentra "tech", "technology", "tecnologico"
+
+2. **Filtros progresivos** - Empezar con pocos filtros, revelar mas solo si el usuario los necesita
+
+3. **Relevancia contextual** - Los grants con deadlines proximos y montos mayores aparecen primero
+
+```javascript
+function scoreResult(grant, query, userPreferences) {
+  let score = textRelevance(grant, query)
+
+  // Boost por deadline cercano
+  if (isWithinDays(grant.deadline, 30)) score *= 1.3
+
+  // Boost por match con preferencias
+  if (matchesSector(grant, userPreferences)) score *= 1.2
+
+  // Penalizar grants expirados (pero mostrarlos por referencia)
+  if (isPast(grant.deadline)) score *= 0.3
+
+  return score
+}
+```
+
+### 3. Performance con Datos Crecientes
+
+**El problema:** A medida que la base de datos crece, las busquedas se vuelven lentas. Y los usuarios esperan resultados instantaneos.
+
+**La solucion:**
+
+1. **Indices estrategicos** - No indexar todo, solo los campos realmente usados en filtros
+
+2. **Paginacion real** - No cargar 500 grants para mostrar 20. Cursor-based pagination
+
+3. **Caching inteligente** - Las busquedas populares se cachean. Invalidacion cuando hay datos nuevos
+
+4. **Prefetch predictivo** - Si el usuario esta en la pagina 1, pre-cargar pagina 2 en background
+
+## UX Decisions
+
+### El Dashboard Principal
+
+El cliente inicialmente queria "todos los datos visibles". Le explique por que eso abrumaria a los usuarios.
+
+**Implementamos:**
+- Vista de tarjetas con informacion esencial (titulo, monto, deadline)
+- Expansion on-click para detalles completos
+- Indicadores visuales de urgencia (rojo para deadlines < 7 dias)
+
+### El Flujo de Organizacion
+
+Los usuarios necesitan trackear en que grants estan interesados, cuales ya aplicaron, cuales fueron rechazados.
+
+**Implementamos un sistema de estados:**
+- Nuevo (recien descubierto)
+- En revision (evaluando si aplica)
+- Preparando aplicacion
+- Aplicado
+- Aprobado / Rechazado
+
+Cada estado tiene su columna en vista Kanban - familiar para cualquiera que haya usado Trello.
+
+## Stack Tecnologico
+
+| Categoria | Tecnologia | Razon |
+|-----------|------------|-------|
+| Frontend | React + Vite | Desarrollo rapido, HMR excelente |
+| Styling | Tailwind CSS | Consistencia visual, responsive facil |
+| Deploy | Vercel | Preview deployments, edge functions |
+
+## Resultados
+
+El dashboard esta en uso activo. Metricas desde el lanzamiento:
+
+- **Tiempo de busqueda reducido** - De ~45 min navegando multiples sitios a ~5 min en el dashboard
+- **Oportunidades organizadas** - El usuario promedio trackea 15-20 grants activamente
+- **Zero bugs criticos** post-lanzamiento
+
+## Lecciones del Proyecto
+
+### 1. Escuchar no es lo mismo que obedecer
+
+El cliente tenia muchas ideas sobre features. Mi trabajo fue filtrar cuales resolvian el problema real y cuales eran "nice to have" que complicarian el producto.
+
+**Resultado:** Lanzamos con 40% de las features inicialmente solicitadas. Cubrimos 95% de los casos de uso.
+
+### 2. Los datos son tan buenos como su fuente
+
+Garbage in, garbage out. Dedique tiempo significativo a crear un pipeline de ingestion que validara y normalizara datos antes de entrar al sistema.
+
+### 3. El onboarding predice la retencion
+
+Los primeros 5 minutos del usuario determinan si regresa. Implemente un tutorial interactivo que guia al usuario a encontrar su primer grant relevante.
+
+## Reflexion
+
+GrantInsight es un ejemplo de como un problema aparentemente simple (centralizar informacion) tiene capas de complejidad cuando lo atacas en serio.
+
+El valor no esta en la tecnologia, sino en las horas que le ahorra al usuario. Cada minuto que un fundador no gasta buscando grants es un minuto que puede invertir en su proyecto.
+
+---
+
+*GrantInsight es un proyecto de cliente. Si tienes un problema similar que necesita una solucion custom, [conversemos](/contacto).*

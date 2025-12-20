@@ -1,0 +1,131 @@
+---
+title: "Caso de Estudio: Sophie Referrals - Sistema de Comisiones para Agencias de Viajes"
+excerpt: "Disenando un sistema de tracking de ventas con QR codes unicos y gestion transparente de comisiones. Lecciones sobre validacion de mercado y cuando pausar un proyecto."
+date: "2024-12-13"
+author: "Mauro | Pathfinders Labs"
+category: "Case Study"
+featuredImage: ""
+---
+
+## El Contexto
+
+En el ecosistema de turismo de Latinoamerica, hay una relacion simbiotica entre hostales y agencias de viajes: las agencias traen huespedes, los hostales pagan comisiones. Suena simple.
+
+En la practica, es un caos.
+
+He visto hostales perdiendo track de que agencia envio a cual huesped. Agencias reclamando comisiones que supuestamente no se pagaron. Hojas de Excel con meses de deuda acumulada.
+
+**Sophie Referrals nacio para resolver esto.**
+
+## La Propuesta de Valor
+
+Un sistema donde:
+
+1. Cada agencia tiene un **QR code unico**
+2. Cuando el huesped reserva escaneando ese QR, la atribucion es automatica
+3. Las comisiones se calculan en tiempo real
+4. Ambas partes ven el mismo dashboard - **transparencia total**
+
+## Desafios de Diseno
+
+### 1. El Sistema de Atribucion
+
+**El problema:** Como atribuir una reserva a una agencia de forma confiable y resistente a fraude?
+
+**Opciones evaluadas:**
+- Cookies - Problema: se borran, no funcionan cross-device
+- Codigos de referido manuales - Problema: friction, errores de tipeo
+- Links unicos - Mejor, pero aun hay friction
+
+**La solucion:** QR codes dinamicos con parametros encriptados. Cada QR contiene un token unico que expira, identificando la agencia, el momento del escaneo, y un fingerprint del dispositivo.
+
+```javascript
+// Generacion de QR token
+function generateReferralToken(agencyId) {
+  const payload = {
+    a: agencyId,
+    t: Date.now(),
+    n: crypto.randomBytes(8).toString('hex')
+  }
+  return encrypt(JSON.stringify(payload), SECRET_KEY)
+}
+```
+
+### 2. Estructuras de Comision Flexibles
+
+No todas las agencias tienen el mismo acuerdo. Algunas cobran 10% fijo. Otras tienen escalonados (15% hasta 10 reservas, 20% despues). Algunas tienen minimos garantizados.
+
+**El problema:** Como modelar esta variabilidad sin crear un sistema imposible de mantener?
+
+**La solucion:** Un sistema de reglas basado en JSON Schema:
+
+```javascript
+const commissionRule = {
+  type: 'tiered',
+  tiers: [
+    { min: 0, max: 10, rate: 0.15 },
+    { min: 11, max: null, rate: 0.20 }
+  ],
+  minimumMonthly: 50, // USD
+  currency: 'USD'
+}
+```
+
+Un engine de calculo interpreta estas reglas, permitiendo configuraciones personalizadas sin cambiar codigo.
+
+### 3. El Dashboard Dual
+
+**El problema:** Tanto el hostal como la agencia necesitan ver informacion - pero no la misma informacion. Y ambos deben confiar en que los numeros son reales.
+
+**La solucion:** Un solo source of truth con vistas filtradas:
+
+- **Vista Hostal:** Todas las agencias, comisiones pendientes, historico de pagos
+- **Vista Agencia:** Solo sus referidos, sus comisiones, sus pagos
+- **Mecanismo de verificacion:** Cada transaccion tiene un hash verificable que ambas partes pueden auditar
+
+## Stack Tecnologico
+
+| Categoria | Tecnologia |
+|-----------|------------|
+| Frontend | React 18 + TypeScript |
+| Build | Vite |
+| Styling | Tailwind CSS |
+| QR Generation | qrcode.js |
+
+## Por Que Esta en Pause
+
+Sophie Referrals llego a MVP funcional. La landing esta lista, el sistema de QR funciona, el calculo de comisiones esta implementado.
+
+Pero durante la validacion, descubri algo importante: **el problema existia, pero la urgencia de resolverlo no era suficiente.**
+
+Los hostales y agencias habian desarrollado workarounds que, aunque ineficientes, funcionaban. El dolor no era lo suficientemente agudo para justificar adoptar un nuevo sistema.
+
+### Lecciones de la Pausa
+
+1. **Problema ≠ Mercado** - Que exista un problema no significa que haya un mercado dispuesto a pagar por resolverlo
+
+2. **Timing matters** - Quiza en 2-3 anos, cuando el turismo en LATAM se digitalice mas, la friccion de los metodos actuales se vuelva insostenible
+
+3. **Pausar no es fallar** - El codigo esta escrito, los sistemas disenados. Cuando el mercado este listo, puedo reactivar en semanas, no meses
+
+## Que Haria Diferente
+
+Si empezara hoy:
+
+1. **Validar antes de construir** - Hubiera hablado con 20 hostales y 10 agencias ANTES de escribir una linea de codigo
+2. **Buscar design partners** - Encontrar 2-3 early adopters comprometidos a usar el sistema desde el dia 1
+3. **Cobrar desde el MVP** - "Si no pagan, no validan" - el dinero es la unica validacion real
+
+## El Valor del Proyecto
+
+Aunque Sophie esta en pause, el proyecto no fue tiempo perdido:
+
+- El sistema de QR lo reutilice en Digitaliza
+- El engine de comisiones escalonadas lo adapte para HostelOS (tours)
+- Las lecciones de validacion me ahorraron meses en otros proyectos
+
+**A veces, un proyecto "fallido" es el mejor curso de Product Management que puedes tomar.**
+
+---
+
+*Sophie Referrals esta en stand-by, pero el codigo y los learnings siguen vivos. Si trabajas en turismo y crees que hay una oportunidad aqui, [hablemos](/contacto).*
