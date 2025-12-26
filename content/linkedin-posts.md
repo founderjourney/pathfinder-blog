@@ -95,50 +95,63 @@ Documente toda la arquitectura, las decisiones tecnicas, y las lecciones aprendi
 ## 3. SOPHIE REFERRALS - Sistema de Comisiones
 
 ```
-A veces, el mejor proyecto es el que pausas a tiempo.
+Las agencias de viajes pagan hasta 20% de comision a hostales que recomiendan sus tours.
 
-Sophie Referrals iba a revolucionar como hostales y agencias de viajes manejan comisiones.
+Suena genial. Hasta que el hostal pregunta:
 
-El problema era real:
-→ Hostales perdiendo track de que agencia envio a que huesped
-→ Agencias reclamando comisiones no pagadas
-→ Hojas de Excel con meses de deuda acumulada
+"¿Como se que me estan pagando lo correcto?"
 
-La solucion tecnica estaba lista:
-→ QR codes unicos por agencia
-→ Atribucion automatica de reservas
-→ Dashboard transparente para ambas partes
+Ese problema de confianza me llevo a construir Sophie Referrals.
+
+El escenario actual:
+→ Agencia: "Vendimos 30 tours gracias a tu hostal"
+→ Hostal: "No puedo verificarlo"
+→ Agencia: "Confia en nosotros"
+→ Hostal: *deja de recomendar tours*
+
+Todos pierden.
+
+La solucion:
+Un panel de gestion en tiempo real donde el hostal ve EXACTAMENTE:
+→ Cuantos huespedes clickearon en cada tour
+→ Cuantos compraron
+→ Cuanto le deben
+
+Desde el primer click hasta la compra. 100% transparente.
+
+La solucion tecnica funciona.
+El MVP esta listo.
 
 Entonces, ¿por que lo pause?
 
-Durante la validacion descubri algo importante:
+Two-sided marketplace problem.
 
-El problema existia.
-Pero la urgencia de resolverlo NO era suficiente.
+Necesitas hostales para atraer agencias.
+Y agencias para atraer hostales.
 
-Los hostales y agencias habian desarrollado workarounds que, aunque ineficientes, funcionaban.
-El dolor no justificaba adoptar un sistema nuevo.
+Los hostales ya habian desarrollado workarounds:
+→ Algunos dejaron de recomendar tours
+→ Otros negociaron pagos fijos mensuales
+→ El dolor era real, pero no urgente
 
 Lecciones que me llevo:
 
 1. Problema ≠ Mercado
-   Que exista un problema no significa que haya mercado dispuesto a pagar.
+   Que exista problema no significa que paguen por resolverlo.
 
-2. Pausar no es fallar
-   El codigo esta escrito. Cuando el mercado este listo, reactivo en semanas.
+2. Two-sided marketplaces son DIFICILES
+   Empieza resolviendo para UN lado primero.
 
-3. El dinero es la unica validacion real
-   "Me encanta la idea" no cuenta. "Toma mi tarjeta" si.
+3. Pausar no es fallar
+   El codigo esta escrito. Cuando una agencia grande quiera transparencia, reactivo en semanas.
 
-Este "fracaso" me ahorro meses en otros proyectos.
-
-Caso completo con learnings tecnicos y de producto → [LINK]
+Caso completo → [LINK]
 
 ---
 
-¿Alguna vez pausaste un proyecto y fue la decision correcta?
+¿Han trabajado con two-sided marketplaces? ¿Como resolvieron el chicken-and-egg?
 
-#StartupLessons #ProductValidation #BuildingInPublic #FailFast #Entrepreneurship #TechStartups
+#StartupLessons #ProductValidation #BuildingInPublic #TwoSidedMarketplace #TravelTech #Entrepreneurship
 ```
 
 ---
