@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "publish": "node scripts/publish.js"
+    "new": "node scripts/new.js",
+    "drafts": "node scripts/drafts.js",
+    "publish": "node scripts/publish.js",
+    "blog": "node scripts/blog.js"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",

@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Founder Journey Blog
 
-## Getting Started
+Blog personal de Pathfinders Labs documentando el journey de construir productos SaaS y democratizar tecnología web.
 
-First, run the development server:
+**Stack:** Next.js 14 + MDX + Tailwind CSS
+
+**Live:** [founderjourney.pathfinderslabs.com](https://founderjourney.pathfinderslabs.com)
+
+## Publicar contenido
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Crear nuevo artículo
+npm run new "Título del artículo"
+
+# Ver drafts pendientes
+npm run drafts
+
+# Publicar a producción
+npm run publish
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Workflow completo
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. `npm run new "Mi artículo"` - Crea draft con template
+2. Editar `content/drafts/mi-articulo.md`
+3. `npm run dev` - Preview en localhost:3000
+4. `npm run publish` - Publica, commit y deploy automático
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### CLI unificado
 
-## Learn More
+```bash
+npm run blog help     # Ver todos los comandos
+npm run blog new      # Crear draft
+npm run blog drafts   # Ver pendientes
+npm run blog publish  # Publicar
+npm run blog dev      # Servidor local
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Estructura de contenido
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+content/
+├── drafts/           # Borradores (escribir aquí)
+│   └── published/    # Archivo de publicados
+└── posts/            # Artículos publicados (.mdx)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Formato de artículo
 
-## Deploy on Vercel
+```markdown
+# Título del Artículo
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Párrafo introductorio que se usa como excerpt.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Secciones...
+```
+
+El script de publicación auto-detecta:
+- **Categoría** según keywords (Architecture, Technical, Building in Public, Case Study)
+- **Slug** desde el título
+- **Fecha** de publicación
+- **Reading time**
+
+## Desarrollo
+
+```bash
+npm run dev      # Servidor desarrollo
+npm run build    # Build producción
+npm run lint     # Linter
+```
+
+## Deploy
+
+Push a `main` → GitHub Actions → Deploy automático a VPS via SSH.
